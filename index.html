@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Apartment Rent Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: 1.1fr 2fr;
+      gap: 60px;
+      align-items: flex-start;
+    }
+
+    .card {
+      padding: 8px 0 0;
+    }
+
+    .field-block {
+      border: 1px solid #555;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      min-height: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #fff;
+    }
+
+    .field-block label {
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .field-block input,
+    .field-block select {
+      border: none;
+      outline: none;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .section-title {
+      margin: 4px 0 12px;
+      font-weight: 600;
+    }
+
+    .payment-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    .payment-row .field-block {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .room-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .rooms-wrapper {
+      display: grid;
+      grid-template-columns: 0.3fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+      column-gap: 10px;
+      row-gap: 10px;
+      align-items: center;
+    }
+
+    .room-label {
+      text-align: right;
+      padding-right: 4px;
+      font-weight: 600;
+    }
+
+    .room-button-column {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .btn {
+      border-radius: 6px;
+      border: 1px solid #333;
+      padding: 10px 22px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn:hover {
+      background: #f2f2f2;
+    }
+
+    .btn-remove {
+      background: #fff;
+      border: 1px solid #dc3545;
+      color: #dc3545;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      max-width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-remove:hover {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .btn-large {
+      min-width: 320px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .price-table-wrapper {
+      max-width: 99%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #333;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    table thead tr:first-child th {
+      background: #f9f9f9;
+      font-weight: 600;
+    }
+
+    table thead tr:nth-child(2) th {
+      background: #fff;
+    }
+
+    .price-duration-cell {
+      text-align: left;
+    }
+
+    .summary {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .summary span.bad {
+      color: #c00;
+      font-weight: 600;
+    }
+
+    .summary span.good {
+      color: #008000;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1000px) {
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+
+      .rooms-wrapper {
+        grid-template-columns: 0.4fr 1.2fr 1.2fr;
+      }
+
+      .rooms-wrapper .field-block {
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Top row -->
+    <div class="top-row">
+      <!-- Apartment Information -->
+      <div class="card">
+        <h2>Apartment Information</h2>
+
+        <div class="field-block">
+          <label for="apartmentNumber">Apartment Number</label>
+          <input id="apartmentNumber" type="text" placeholder="e.g. A-301" />
+        </div>
+
+        <div class="section-title">Payment Cycle</div>
+
+        <div class="payment-row">
+          <div class="field-block">
+            <label for="paymentStart"> Start Date</label>
+            <input id="paymentStart" type="date" value="2025-11-08" pattern="\d{4}-\d{2}-\d{2}" />
+          </div>
+          <div class="field-block">
+            <label for="paymentEnd"> End Date</label>
+            <input id="paymentEnd" type="date" value="2025-12-08" pattern="\d{4}-\d{2}-\d{2}" />
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label for="totalAmount">Total Amount (whole apartment)</label>
+          <div style="display: flex; gap: 8px;">
+            <input id="totalAmount" type="number" step="0.01" placeholder="e.g. 1200" style="flex: 1;" value="10000" />
+            <input id="currency" type="text" value="SAR" placeholder="Currency" style="width: 80px; text-align: center;" />
+          </div>
+        </div>
+        <div class="field-block">
+          <label for="totalRooms">Total Number of Rooms</label>
+          <input id="totalRooms" type="number" step="1" placeholder="e.g. 3" value="3" />
+        </div>
+      </div>
+
+      <!-- Room Details -->
+      <div class="card">
+        <h2 class="room-header">Room Details</h2>
+
+        <div class="rooms-wrapper" id="roomsWrapper">
+          <!-- Rows will be injected by JS -->
+        </div>
+
+        <div class="room-button-column">
+          <button class="btn" id="addRoomBtn">Add New Room</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculate button -->
+    <div>
+      <button class="btn btn-large" id="calculateBtn">Calculate</button>
+    </div>
+
+    <!-- Business Rules Documentation -->
+    <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #007acc; border-radius: 5px;">
+      <h3 style="margin: 0 0 15px 0; color: #007acc;">📋 Apartment Rent Calculator - Business Rules & Logic</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">💰 Payment Cycle Rules</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>Room prices are per payment cycle</strong> - not per day or per person's stay duration</li>
+            <li><strong>Daily rate calculation:</strong> Room Price ÷ Payment Cycle Days</li>
+            <li><strong>First person in room pays full price</strong> for the entire payment cycle</li>
+            <li><strong>Period breakdown:</strong> Automatically splits periods that extend beyond payment cycle boundaries</li>
+            <li><strong>YYYY-MM-DD format:</strong> All dates use standardized format throughout the system</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">🏠 Room Assignment Rules</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>Dynamic room count:</strong> Room dropdowns adjust based on "Total Number of Rooms" setting</li>
+            <li><strong>Room availability:</strong> System tracks room occupancy over time for conflict detection</li>
+            <li><strong>Multiple people per room:</strong> Subsequent people use room already paid for by first person</li>
+            <li><strong>Cross-period validation:</strong> Monthly room price totals checked against apartment total</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">🔄 Refund & Replacement Logic</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>First-person-pays-full rule:</strong> First person in room pays entire room price for payment cycle</li>
+            <li><strong>Replacement refunds:</strong> When someone uses a room already paid for, they refund the first person proportionally</li>
+            <li><strong>Daily rate refunds:</strong> Refund = Daily Rate × Days Using Room</li>
+            <li><strong>Next cycle logic:</strong> Same rules apply for periods extending into next payment cycle</li>
+            <li><strong>Early departure refunds:</strong> Company refunds unused days when first person leaves early from next cycle</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">📊 Period Type Classifications</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong style="color: #856404;">Before Payment Cycle:</strong> Proportional payment based on days before cycle starts</li>
+            <li><strong style="color: #155724;">Within Payment Cycle:</strong> Full room price payment by first person in room</li>
+            <li><strong style="color: #004085;">After Payment Cycle:</strong> Full room price for next cycle by first person</li>
+            <li><strong>Period boundary handling:</strong> Automatic splitting when stays cross payment cycle dates</li>
+            <li><strong>Daily rate adjustments:</strong> Different calculations for different period types</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">🏢 Company Compensation Rules</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>Gap period detection:</strong> System identifies unoccupied rooms during payment cycle</li>
+            <li><strong>Daily room rate:</strong> (Total Apartment Cost ÷ Payment Cycle Days) ÷ Number of Rooms</li>
+            <li><strong>Compensation calculation:</strong> Daily Room Rate × Unoccupied Days</li>
+            <li><strong>Refund distribution:</strong> Company compensation split equally among active tenants in other rooms</li>
+            <li><strong>Gap period consolidation:</strong> Consecutive unoccupied days grouped into periods</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">💱 Currency & Display Rules</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>Default currency:</strong> SAR (Saudi Arabian Riyal) with user customization option</li>
+            <li><strong>Currency textbox:</strong> Allows manual entry of any currency code</li>
+            <li><strong>Amount precision:</strong> All monetary values displayed with 2 decimal places</li>
+            <li><strong>Percentage calculation:</strong> Individual costs shown as percentage of total apartment cost</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">📈 Reporting & Tables</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong>Individual Costs table:</strong> Total Paid Amount, Total Refund, Actual Spent Amount, Percentage</li>
+            <li><strong>Room Occupancy Details:</strong> Period-by-period breakdown with color coding</li>
+            <li><strong>Refund/Replacement Details:</strong> Who pays whom and for what reason</li>
+            <li><strong>Payment Cycle Obligations:</strong> Current and next cycle payment responsibilities</li>
+            <li><strong>Gap periods section:</strong> Unoccupied rooms and company compensation details</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 10px 0; color: #333;">🎨 Color Coding System</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
+            <li><strong style="background-color: #fff3cd; padding: 2px 4px;">Yellow background:</strong> Before payment cycle periods</li>
+            <li><strong style="background-color: #d1ecf1; padding: 2px 4px;">Blue background:</strong> After payment cycle periods</li>
+            <li><strong style="background-color: #d4edda; padding: 2px 4px;">Green background:</strong> Free periods (paid by someone else)</li>
+            <li><strong style="background-color: #e8f5e8; padding: 2px 4px;">Light green:</strong> Current cycle obligations</li>
+            <li><strong style="background-color: #fff3e0; padding: 2px 4px;">Light orange:</strong> Next cycle obligations</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; padding: 15px; background-color: #e7f3ff; border: 1px solid #007acc; border-radius: 3px;">
+        <h4 style="margin: 0 0 10px 0; color: #007acc;">🔑 Key Business Logic Summary</h4>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5;">
+          <strong>Core Principle:</strong> The first person to occupy a room during a payment cycle pays the full room price for that entire cycle. 
+          Any subsequent people using that room must refund the first person proportionally based on their usage days. 
+          The company compensates for unoccupied rooms and distributes this compensation as refunds to active tenants. 
+          All calculations maintain period boundaries and handle cross-cycle scenarios with appropriate daily rate adjustments.
+        </p>
+      </div>
+    </div>
+
+    <!-- Price Details table -->
+    <div id="priceDetailsContainer" class="price-table-wrapper"></div>
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    function parseDateFromInput(input) {
+      if (!input || !input.value) return null;
+      // Ensure input is in YYYY-MM-DD format
+      const dateValue = input.value;
+      if (!dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        console.error('Date must be in YYYY-MM-DD format:', dateValue);
+        return null;
+      }
+      const d = new Date(dateValue + "T00:00:00");
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDateToYYYYMMDD(date) {
+      if (!date) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDateToYYYYMMDD(date) {
+      if (!date) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function daysInclusive(start, end) {
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const diff = (end.getTime() - start.getTime()) / msPerDay;
+      return Math.floor(diff) + 1; // inclusive
+    }
+
+    // ===== Room row handling =====
+    const roomsWrapper = document.getElementById("roomsWrapper");
+    const roomIndexes = [];
+    let roomCounter = 0;
+
+    function generateRoomOptions() {
+      const totalRoomsInput = document.getElementById("totalRooms");
+      const totalRooms = parseInt(totalRoomsInput.value) || 3;
+      const options = [""];
+      for (let i = 1; i <= totalRooms; i++) {
+        options.push("Room " + i);
+      }
+      return options;
+    }
+
+    function updateAllRoomDropdowns() {
+      roomIndexes.forEach((idx) => {
+        const roomSelect = document.getElementById("room-" + idx + "-name");
+        if (roomSelect) {
+          const currentValue = roomSelect.value;
+          // Clear existing options
+          roomSelect.innerHTML = "";
+          // Add new options
+          generateRoomOptions().forEach((val) => {
+            const opt = document.createElement("option");
+            opt.value = val;
+            opt.textContent = val === "" ? "-- select room --" : val;
+            roomSelect.appendChild(opt);
+          });
+          // Restore previous value if still valid
+          if (roomSelect.querySelector(`option[value="${currentValue}"]`)) {
+            roomSelect.value = currentValue;
+          }
+        }
+      });
+    }
+
+    function removeRoomRow(idx) {
+      // Remove from roomIndexes array
+      const indexPosition = roomIndexes.indexOf(idx);
+      if (indexPosition > -1) {
+        roomIndexes.splice(indexPosition, 1);
+      }
+      
+      // Remove all DOM elements for this row
+      const elementsToRemove = [
+        document.getElementById(`room-label-${idx}`),
+        document.getElementById(`room-${idx}-name`)?.parentElement,
+        document.getElementById(`room-${idx}-person`)?.parentElement,
+        document.getElementById(`room-${idx}-price`)?.parentElement,
+        document.getElementById(`room-${idx}-start`)?.parentElement,
+        document.getElementById(`room-${idx}-end`)?.parentElement,
+        document.getElementById(`remove-btn-${idx}`)
+      ];
+      
+      elementsToRemove.forEach(element => {
+        if (element && element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      });
+    }
+
+    function createRoomRow(defaults) {
+      roomCounter += 1;
+      const idx = roomCounter;
+      roomIndexes.push(idx);
+
+      const roomLabel = document.createElement("div");
+      roomLabel.className = "room-label";
+      roomLabel.id = `room-label-${idx}`;
+      roomLabel.textContent = "#" + idx;
+
+      // Room select
+      const roomBlock = document.createElement("div");
+      roomBlock.className = "field-block";
+      const roomLabelEl = document.createElement("label");
+      roomLabelEl.textContent = "Dropbox: Room";
+      roomLabelEl.htmlFor = "room-" + idx + "-name";
+      const roomSelect = document.createElement("select");
+      roomSelect.id = roomLabelEl.htmlFor;
+      generateRoomOptions().forEach((val) => {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val === "" ? "-- select room --" : val;
+        roomSelect.appendChild(opt);
+      });
+      if (defaults && defaults.room) {
+        roomSelect.value = defaults.room;
+      }
+      roomBlock.appendChild(roomLabelEl);
+      roomBlock.appendChild(roomSelect);
+
+      // Person
+      const personBlock = document.createElement("div");
+      personBlock.className = "field-block";
+      const personLabel = document.createElement("label");
+      personLabel.textContent = "Person";
+      personLabel.htmlFor = "room-" + idx + "-person";
+      const personInput = document.createElement("input");
+      personInput.id = personLabel.htmlFor;
+      personInput.type = "text";
+      personInput.placeholder = "Person name";
+      if (defaults && defaults.person) {
+        personInput.value = defaults.person;
+      }
+      personBlock.appendChild(personLabel);
+      personBlock.appendChild(personInput);
+
+      // Price
+      const priceBlock = document.createElement("div");
+      priceBlock.className = "field-block";
+      const priceLabel = document.createElement("label");
+      priceLabel.textContent = "Price";
+      priceLabel.htmlFor = "room-" + idx + "-price";
+      const priceInput = document.createElement("input");
+      priceInput.id = priceLabel.htmlFor;
+      priceInput.type = "number";
+      priceInput.step = "0.01";
+      priceInput.placeholder = "e.g. 3400";
+      if (defaults && typeof defaults.price === "number") {
+        priceInput.value = defaults.price;
+      }
+      priceBlock.appendChild(priceLabel);
+      priceBlock.appendChild(priceInput);
+
+      // Start date
+      const startBlock = document.createElement("div");
+      startBlock.className = "field-block";
+      const startLabel = document.createElement("label");
+      startLabel.textContent = " StartDate";
+      startLabel.htmlFor = "room-" + idx + "-start";
+      const startInput = document.createElement("input");
+      startInput.id = startLabel.htmlFor;
+      startInput.type = "date";
+      if (defaults && defaults.start) {
+        startInput.value = defaults.start;
+      }
+      startBlock.appendChild(startLabel);
+      startBlock.appendChild(startInput);
+
+      // End date
+      const endBlock = document.createElement("div");
+      endBlock.className = "field-block";
+      const endLabel = document.createElement("label");
+      endLabel.textContent = " EndDate";
+      endLabel.htmlFor = "room-" + idx + "-end";
+      const endInput = document.createElement("input");
+      endInput.id = endLabel.htmlFor;
+      endInput.type = "date";
+      if (defaults && defaults.end) {
+        endInput.value = defaults.end;
+      }
+      endBlock.appendChild(endLabel);
+      endBlock.appendChild(endInput);
+
+      // Remove button
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn-remove";
+      removeBtn.id = `remove-btn-${idx}`;
+      removeBtn.textContent = "×";
+      removeBtn.title = "Remove this record";
+      removeBtn.addEventListener("click", function() {
+        if (confirm(`Are you sure you want to remove record #${idx}?`)) {
+          removeRoomRow(idx);
+        }
+      });
+
+      // Append to wrapper in grid order
+      roomsWrapper.appendChild(roomLabel);
+      roomsWrapper.appendChild(roomBlock);
+      roomsWrapper.appendChild(personBlock);
+      roomsWrapper.appendChild(priceBlock);
+      roomsWrapper.appendChild(startBlock);
+      roomsWrapper.appendChild(endBlock);
+      roomsWrapper.appendChild(removeBtn);
+    }
+
+    // Initialize with three rows to mimic sketch
+    createRoomRow({ room: "Room 1", person: "Nhon", price: 3400, start: "2025-11-08", end: "2025-11-21" });
+    createRoomRow({ room: "Room 1", person: "Robert", price: 3400, start: "2025-11-21", end: "2025-12-20" });
+    createRoomRow({ room: "Room 2", person: "Huy", price: 3300, start: "2025-11-28", end: "2026-01-07" });
+    createRoomRow({ room: "Room 3", person: "Bach", price: 3300, start: "2025-11-08", end: "2025-12-01" });    
+    createRoomRow({ room: "Room 2", person: "Trung", price: 3300, start: "2025-11-08", end: "2025-12-01" });   
+    createRoomRow({ room: "Room 3", person: "Ha", price: 3300, start: "2025-12-05", end: "2026-01-08" });   
+
+    document
+      .getElementById("addRoomBtn")
+      .addEventListener("click", function () {
+        createRoomRow();
+      });
+
+    // Update room dropdowns when total rooms changes
+    document
+      .getElementById("totalRooms")
+      .addEventListener("input", function () {
+        updateAllRoomDropdowns();
+      });
+
+    // ===== Calculation & rendering =====
+    function calculateAndRender() {
+      const paymentStartInput = document.getElementById("paymentStart");
+      const paymentEndInput = document.getElementById("paymentEnd");
+      const totalAmountInput = document.getElementById("totalAmount");
+      const totalRoomsInput = document.getElementById("totalRooms");
+
+      const paymentStart = parseDateFromInput(paymentStartInput);
+      const paymentEnd = parseDateFromInput(paymentEndInput);
+      const totalAmountEntered = parseFloat(totalAmountInput.value) || 0;
+      const totalRooms = parseInt(totalRoomsInput.value) || 3;
+      const currency = document.getElementById("currency").value || "SAR";
+
+      if (!paymentStart || !paymentEnd || paymentEnd < paymentStart) {
+        alert("Please enter a valid payment cycle start and end date.");
+        return;
+      }
+
+      if (totalAmountEntered <= 0) {
+        alert("Please enter a valid total amount for the apartment.");
+        return;
+      }
+
+      // Collect all person periods
+      const personPeriods = [];
+      roomIndexes.forEach((idx) => {
+        const personInput = document.getElementById("room-" + idx + "-person");
+        const priceInput = document.getElementById("room-" + idx + "-price");
+        const startInput = document.getElementById("room-" + idx + "-start");
+        const endInput = document.getElementById("room-" + idx + "-end");
+        const roomSelect = document.getElementById("room-" + idx + "-name");
+
+        if (!personInput || !priceInput || !startInput || !endInput || !roomSelect) return;
+
+        const personName = (personInput.value || "").trim();
+        const price = parseFloat(priceInput.value);
+        const start = parseDateFromInput(startInput);
+        const end = parseDateFromInput(endInput);
+        const roomName = roomSelect.value;
+
+        if (!personName || isNaN(price) || !start || !end || !roomName || end < start) {
+          return;
+        }
+
+        personPeriods.push({
+          person: personName,
+          room: roomName,
+          price: price,
+          start: start,
+          end: end,
+          startStr: startInput.value,
+          endStr: endInput.value
+        });
+      });
+
+      const result = calculateOptimalCosts(personPeriods, paymentStart, paymentEnd, totalAmountEntered, totalRooms);
+      renderAdvancedPriceTable(result, totalAmountEntered, currency);
+    }
+
+    function calculateOptimalCosts(personPeriods, paymentStart, paymentEnd, totalAmount, totalRooms) {
+      const personTotals = {};
+      const personPaidAmounts = {};
+      const personRefundAmounts = {};
+      const segmentDetails = [];
+      const gapPeriods = [];
+      const refundDetails = [];
+      const monthlyBreakdown = [];
+      
+      // Break down periods that extend beyond payment cycle
+      const processedPeriods = [];
+      personPeriods.forEach((period, index) => {
+        // Room price is for entire payment cycle, not just the person's living period
+        const paymentCycleDays = daysInclusive(paymentStart, paymentEnd);
+        const dailyRate = period.price / paymentCycleDays; // Daily rate based on payment cycle, not living period
+        
+        // Check if period extends beyond payment cycle
+        if (period.start < paymentStart || period.end > paymentEnd) {
+          // Break down into sub-periods
+          const subPeriods = [];
+          
+          // Period before payment cycle
+          if (period.start < paymentStart) {
+            const beforeEnd = new Date(Math.min(period.end.getTime(), paymentStart.getTime() - 24 * 60 * 60 * 1000));
+            if (beforeEnd >= period.start) {
+              const beforeDays = daysInclusive(period.start, beforeEnd);
+              subPeriods.push({
+                ...period,
+                end: beforeEnd,
+                actualPrice: dailyRate * beforeDays, // Proportional price for this period
+                fullCyclePrice: period.price, // Full payment cycle price
+                originalIndex: index,
+                periodType: 'before',
+                label: 'Before Payment Cycle'
+              });
+            }
+          }
+          
+          // Period within payment cycle
+          const withinStart = new Date(Math.max(period.start.getTime(), paymentStart.getTime()));
+          const withinEnd = new Date(Math.min(period.end.getTime(), paymentEnd.getTime()));
+          if (withinStart <= withinEnd) {
+            const withinDays = daysInclusive(withinStart, withinEnd);
+            subPeriods.push({
+              ...period,
+              start: withinStart,
+              end: withinEnd,
+              actualPrice: period.price, // Full payment cycle price for within period
+              fullCyclePrice: period.price,
+              originalIndex: index,
+              periodType: 'within',
+              label: 'Within Payment Cycle'
+            });
+          }
+          
+          // Period after payment cycle
+          if (period.end > paymentEnd) {
+            const afterStart = new Date(Math.max(period.start.getTime(), paymentEnd.getTime() + 24 * 60 * 60 * 1000));
+            if (afterStart <= period.end) {
+              const afterDays = daysInclusive(afterStart, period.end);
+              subPeriods.push({
+                ...period,
+                start: afterStart,
+                actualPrice: period.price, // Full payment cycle price for next cycle
+                fullCyclePrice: period.price,
+                originalIndex: index,
+                periodType: 'after',
+                label: 'After Payment Cycle'
+              });
+            }
+          }
+          
+          processedPeriods.push(...subPeriods);
+        } else {
+          // Period is within payment cycle - person pays full room price
+          processedPeriods.push({
+            ...period,
+            actualPrice: period.price, // Full payment cycle price
+            fullCyclePrice: period.price,
+            originalIndex: index,
+            periodType: 'within',
+            label: 'Within Payment Cycle'
+          });
+        }
+      });
+      
+      // Validate monthly totals don't exceed apartment total
+      const monthlyTotals = new Map();
+      processedPeriods.forEach(period => {
+        if (period.periodType === 'within') {
+          const monthKey = `${period.start.getFullYear()}-${String(period.start.getMonth() + 1).padStart(2, '0')}`;
+          if (!monthlyTotals.has(monthKey)) {
+            monthlyTotals.set(monthKey, 0);
+          }
+          monthlyTotals.set(monthKey, monthlyTotals.get(monthKey) + period.price);
+        }
+      });
+      
+      // Check for monthly total violations
+      const monthlyViolations = [];
+      monthlyTotals.forEach((total, monthKey) => {
+        if (total > totalAmount) {
+          monthlyViolations.push({
+            month: monthKey,
+            total: total,
+            excess: total - totalAmount
+          });
+        }
+      });
+      
+      // Group periods by room to handle replacements
+      const roomOccupancy = {};
+      processedPeriods.forEach((period, index) => {
+        if (!roomOccupancy[period.room]) {
+          roomOccupancy[period.room] = [];
+        }
+        roomOccupancy[period.room].push({
+          ...period,
+          processedIndex: index
+        });
+      });
+      
+      // Process each room separately
+      Object.keys(roomOccupancy).forEach(roomName => {
+        const roomPeriods = roomOccupancy[roomName].sort((a, b) => a.start.getTime() - b.start.getTime());
+        
+        // Check if anyone in this room already paid full for the payment cycle
+        let roomFullyPaidFor = false;
+        let fullPayerPerson = null;
+        let nextCycleFullPayer = null;
+        
+        // Find the first person in this room during the payment cycle - they pay full
+        const firstPersonInRoom = roomPeriods.find(p => p.periodType === 'within');
+        if (firstPersonInRoom) {
+          roomFullyPaidFor = true;
+          fullPayerPerson = firstPersonInRoom.person;
+        }
+        
+        // Find the first person for next cycle (after periods) - they pay full
+        const firstPersonNextCycle = roomPeriods.find(p => p.periodType === 'after');
+        if (firstPersonNextCycle) {
+          nextCycleFullPayer = firstPersonNextCycle.person;
+        }
+        
+        roomPeriods.forEach((period, roomIndex) => {
+          const personDays = daysInclusive(period.start, period.end);
+          const paymentCycleDays = daysInclusive(paymentStart, paymentEnd);
+          
+          // Calculate daily rate based on period type
+          let dailyRate;
+          if (period.periodType === 'after') {
+            // For next cycle periods, use the next cycle length for daily rate calculation
+            const nextCycleStart = new Date(paymentEnd.getTime() + 24 * 60 * 60 * 1000);
+            const nextCycleEnd = new Date(nextCycleStart.getTime() + paymentCycleDays * 24 * 60 * 60 * 1000 - 24 * 60 * 60 * 1000);
+            const nextCycleDays = daysInclusive(nextCycleStart, nextCycleEnd);
+            dailyRate = period.price / nextCycleDays;
+          } else {
+            // For within and before periods, use current payment cycle
+            dailyRate = period.price / paymentCycleDays;
+          }
+          
+          // Initialize tracking for this person
+          if (!personTotals[period.person]) {
+            personTotals[period.person] = 0;
+            personPaidAmounts[period.person] = 0;
+            personRefundAmounts[period.person] = 0;
+          }
+          
+          // For periods within payment cycle, apply normal payment logic
+          if (period.periodType === 'within') {
+            // First person in room pays full room price, others pay nothing initially
+            let amountToPay;
+            if (period.person === fullPayerPerson) {
+              // First person in room - pays full room price
+              amountToPay = period.price;
+            } else {
+              // Subsequent people in room - pay nothing initially (will pay refund to first person)
+              amountToPay = 0;
+            }
+            
+            personPaidAmounts[period.person] += amountToPay;
+            personTotals[period.person] += amountToPay;
+            
+            // Handle replacements and refunds (existing logic)
+            let refundAmount = 0;
+            let refundReason = "";
+            let refundFromWho = "";
+            
+            // If this person is staying free because someone else paid, they owe that person
+            if (period.person !== fullPayerPerson && amountToPay === 0) {
+              const unusedDays = personDays;
+              refundAmount = dailyRate * unusedDays;
+              refundReason = `Using room paid for by ${fullPayerPerson}`;
+              refundFromWho = period.person; // This person pays the refund
+              
+              // This person pays refund to the first person
+              personPaidAmounts[period.person] += refundAmount;
+              personTotals[period.person] += refundAmount;
+              personRefundAmounts[fullPayerPerson] += refundAmount;
+              personTotals[fullPayerPerson] -= refundAmount;
+              
+              refundDetails.push({
+                person: fullPayerPerson,
+                room: period.room,
+                amount: refundAmount,
+                reason: refundReason,
+                fromWho: refundFromWho,
+                dailyRate: dailyRate
+              });
+            }
+          }
+          
+          // For periods after payment cycle (next cycle), apply same logic
+          else if (period.periodType === 'after') {
+            let amountToPay;
+            if (period.person === nextCycleFullPayer) {
+              // First person in room for next cycle - pays full room price
+              amountToPay = period.price;
+              
+              // Check if this person left early (didn't stay the full next cycle)
+              const nextCycleStart = new Date(paymentEnd.getTime() + 24 * 60 * 60 * 1000);
+              const nextCycleEnd = new Date(nextCycleStart.getTime() + paymentCycleDays * 24 * 60 * 60 * 1000 - 24 * 60 * 60 * 1000);
+              
+              if (period.end < nextCycleEnd) {
+                // Person left early in next cycle, company should refund unused days
+                const unusedStart = new Date(period.end.getTime() + 24 * 60 * 60 * 1000);
+                const unusedEnd = nextCycleEnd;
+                const unusedDays = daysInclusive(unusedStart, unusedEnd);
+                const refundAmount = dailyRate * unusedDays;
+                
+                // Company refund for early departure
+                personRefundAmounts[period.person] += refundAmount;
+                personTotals[period.person] -= refundAmount;
+                
+                refundDetails.push({
+                  person: period.person,
+                  room: period.room,
+                  amount: refundAmount,
+                  reason: `Company refund for early departure from next cycle (${formatDateToYYYYMMDD(unusedStart)} to ${formatDateToYYYYMMDD(unusedEnd)})`,
+                  fromWho: 'Company',
+                  dailyRate: dailyRate
+                });
+              }
+            } else {
+              // Subsequent people in room for next cycle - pay nothing initially (will pay refund to first person)
+              amountToPay = 0;
+            }
+            
+            personPaidAmounts[period.person] += amountToPay;
+            personTotals[period.person] += amountToPay;
+            
+            // Handle refunds for next cycle periods (between people)
+            if (period.person !== nextCycleFullPayer && amountToPay === 0) {
+              const unusedDays = personDays;
+              const refundAmount = dailyRate * unusedDays;
+              const refundReason = `Using room paid for by ${nextCycleFullPayer} (Next Cycle)`;
+              const refundFromWho = period.person;
+              
+              // This person pays refund to the first person
+              personPaidAmounts[period.person] += refundAmount;
+              personTotals[period.person] += refundAmount;
+              personRefundAmounts[nextCycleFullPayer] += refundAmount;
+              personTotals[nextCycleFullPayer] -= refundAmount;
+              
+              refundDetails.push({
+                person: nextCycleFullPayer,
+                room: period.room,
+                amount: refundAmount,
+                reason: refundReason,
+                fromWho: refundFromWho,
+                dailyRate: dailyRate
+              });
+            }
+          }
+          
+          // For periods before payment cycle, handle proportionally
+          else if (period.periodType === 'before') {
+            const amountToPay = period.actualPrice; // Already calculated proportionally
+            personPaidAmounts[period.person] += amountToPay;
+            personTotals[period.person] += amountToPay;
+          }
+          
+          // Add to segment details for display
+          let amountForDisplay;
+          let actualSpentAmount;
+          let isFirstPerson = false;
+          let paidByPerson = null;
+          
+          if (period.periodType === 'within') {
+            isFirstPerson = (period.person === fullPayerPerson);
+            paidByPerson = fullPayerPerson;
+          } else if (period.periodType === 'after') {
+            isFirstPerson = (period.person === nextCycleFullPayer);
+            paidByPerson = nextCycleFullPayer;
+          } else if (period.periodType === 'before') {
+            isFirstPerson = true; // Before periods are paid proportionally by the person themselves
+            paidByPerson = period.person;
+          }
+          
+          if (isFirstPerson) {
+            amountForDisplay = period.price; // First person pays full
+            // But actual spent amount is proportional to days stayed
+            actualSpentAmount = dailyRate * personDays;
+          } else {
+            amountForDisplay = 0; // Others pay nothing initially (will pay refund)
+            actualSpentAmount = 0; // They don't spend anything as it's covered
+          }
+          
+          segmentDetails.push({
+            index: period.originalIndex + 1,
+            start: period.start,
+            end: period.end,
+            days: personDays,
+            people: [period.person],
+            peopleCount: 1,
+            rooms: [period.room],
+            roomsCount: 1,
+            totalCost: actualSpentAmount, // Use actual spent amount instead of payment amount
+            costPerPerson: actualSpentAmount,
+            paymentAmount: amountForDisplay, // Keep track of what they paid
+            room: period.room,
+            originalRoomPrice: period.price, // Store original room price
+            dailyRate: dailyRate,
+            periodType: period.periodType,
+            label: period.label,
+            isPaidByOther: !isFirstPerson,
+            paidByPerson: paidByPerson
+          });
+        });
+      });
+      
+      // Enhanced gap analysis with room-specific details and company compensation
+      const roomGaps = {};
+      const companyCompensation = {};
+      
+      Object.keys(roomOccupancy).forEach(roomName => {
+        const roomPeriods = roomOccupancy[roomName].filter(p => p.periodType === 'within').sort((a, b) => a.start.getTime() - b.start.getTime());
+        
+        for (let date = new Date(paymentStart); date <= paymentEnd; date.setDate(date.getDate() + 1)) {
+          const dateStr = date.toISOString().split('T')[0];
+          let isOccupied = false;
+          
+          roomPeriods.forEach(period => {
+            if (date >= period.start && date <= period.end) {
+              isOccupied = true;
+            }
+          });
+          
+          if (!isOccupied) {
+            if (!roomGaps[roomName]) {
+              roomGaps[roomName] = [];
+            }
+            roomGaps[roomName].push(new Date(date));
+          }
+        }
+      });
+      
+      // Calculate company compensation and distribute to existing tenants
+      let totalCompanyCompensation = 0;
+      const dailyApartmentRate = totalAmount / daysInclusive(paymentStart, paymentEnd);
+      const dailyRoomRate = dailyApartmentRate / totalRooms;
+      
+      // Convert room gaps to gap periods and calculate compensation
+      Object.keys(roomGaps).forEach(roomName => {
+        const gaps = roomGaps[roomName];
+        if (gaps.length > 0) {
+          let currentStart = gaps[0];
+          let currentEnd = gaps[0];
+          
+          for (let i = 1; i < gaps.length; i++) {
+            const prevDate = gaps[i - 1];
+            const currentDate = gaps[i];
+            const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (24 * 60 * 60 * 1000);
+            
+            if (dayDiff === 1) {
+              currentEnd = currentDate;
+            } else {
+              const days = daysInclusive(currentStart, currentEnd);
+              const compensationAmount = dailyRoomRate * days;
+              totalCompanyCompensation += compensationAmount;
+              
+              gapPeriods.push({
+                type: 'Room unoccupied',
+                room: roomName,
+                start: currentStart,
+                end: currentEnd,
+                days: days,
+                cost: compensationAmount,
+                description: `${roomName} unoccupied for ${days} day(s) - Company covers ${compensationAmount.toFixed(2)}`
+              });
+              currentStart = currentDate;
+              currentEnd = currentDate;
+            }
+          }
+          
+          const days = daysInclusive(currentStart, currentEnd);
+          const compensationAmount = dailyRoomRate * days;
+          totalCompanyCompensation += compensationAmount;
+          
+          gapPeriods.push({
+            type: 'Room unoccupied',
+            room: roomName,
+            start: currentStart,
+            end: currentEnd,
+            days: days,
+            cost: compensationAmount,
+            description: `${roomName} unoccupied for ${days} day(s) - Company covers ${compensationAmount.toFixed(2)}`
+          });
+        }
+      });
+      
+      // Distribute company compensation as refunds to people staying in other rooms during gap periods
+      const allActiveTenantsReceivingCompensation = new Set();
+      gapPeriods.forEach(gap => {
+        // Find people who are staying in OTHER rooms during this gap period
+        const activeTenantsInOtherRooms = new Set();
+        segmentDetails.forEach(segment => {
+          if (segment.periodType === 'within' && segment.room !== gap.room) {
+            // Check if this segment overlaps with the gap period
+            const segmentStart = segment.start;
+            const segmentEnd = segment.end;
+            const gapStart = gap.start;
+            const gapEnd = gap.end;
+            
+            // Check for overlap
+            if (segmentStart <= gapEnd && segmentEnd >= gapStart) {
+              activeTenantsInOtherRooms.add(segment.people[0]);
+              allActiveTenantsReceivingCompensation.add(segment.people[0]);
+            }
+          }
+        });
+        
+        const activeTenants = Array.from(activeTenantsInOtherRooms);
+        if (activeTenants.length > 0) {
+          const refundPerTenant = gap.cost / activeTenants.length;
+          
+          activeTenants.forEach(tenant => {
+            if (!personRefundAmounts[tenant]) {
+              personRefundAmounts[tenant] = 0;
+            }
+            personRefundAmounts[tenant] += refundPerTenant;
+            personTotals[tenant] -= refundPerTenant;
+            
+            // Add to refund details
+            refundDetails.push({
+              person: tenant,
+              room: gap.room,
+              amount: refundPerTenant,
+              reason: `Company compensation for unoccupied ${gap.room} (${formatDateToYYYYMMDD(gap.start)} to ${formatDateToYYYYMMDD(gap.end)})`,
+              fromWho: 'Company',
+              dailyRate: 0
+            });
+          });
+        }
+      });
+      
+      const activeTenants = Array.from(allActiveTenantsReceivingCompensation);
+      
+      // Calculate total of all person costs
+      const calculatedTotal = Object.values(personTotals).reduce((sum, cost) => sum + cost, 0);
+      
+      // Create monthly breakdown for display
+      monthlyTotals.forEach((total, monthKey) => {
+        monthlyBreakdown.push({
+          month: monthKey,
+          total: total,
+          isViolation: total > totalAmount,
+          excess: total > totalAmount ? total - totalAmount : 0
+        });
+      });
+      
+      // Calculate next payment cycle obligations
+      const nextPaymentStart = new Date(paymentEnd.getTime() + 24 * 60 * 60 * 1000);
+      const nextCycleObligations = [];
+      
+      personPeriods.forEach(period => {
+        // Check if person's end date is after the next payment cycle start
+        // This means they need to pay for the next payment cycle
+        if (period.end >= nextPaymentStart) {
+          nextCycleObligations.push({
+            person: period.person,
+            room: period.room,
+            startDate: period.start,
+            endDate: period.end,
+            roomPrice: period.price,
+            willPayForNextCycle: true,
+            obligationReason: `End date (${formatDateToYYYYMMDD(period.end)}) is after next payment cycle start (${formatDateToYYYYMMDD(nextPaymentStart)})`
+          });
+        }
+      });
+
+      return {
+        personTotals: personTotals,
+        personPaidAmounts: personPaidAmounts,
+        personRefundAmounts: personRefundAmounts,
+        segments: segmentDetails,
+        gapPeriods: gapPeriods,
+        refundDetails: refundDetails,
+        monthlyBreakdown: monthlyBreakdown,
+        monthlyViolations: monthlyViolations,
+        totalCompanyCompensation: totalCompanyCompensation,
+        activeTenants: activeTenants,
+        nextCycleObligations: nextCycleObligations,
+        nextPaymentStart: nextPaymentStart,
+        personPeriods: personPeriods, // Add personPeriods to result
+        paymentStart: paymentStart,   // Add paymentStart to result
+        paymentEnd: paymentEnd,       // Add paymentEnd to result
+        dailyRate: calculatedTotal / daysInclusive(paymentStart, paymentEnd),
+        totalDays: daysInclusive(paymentStart, paymentEnd),
+        calculatedTotal: calculatedTotal
+      };
+    }
+
+    function renderAdvancedPriceTable(result, totalAmountEntered, currency = "SAR") {
+      const container = document.getElementById("priceDetailsContainer");
+      container.innerHTML = "";
+
+      if (!result || Object.keys(result.personTotals).length === 0) {
+        container.textContent = "No valid room data found. Please fill in at least one complete room row.";
+        return;
+      }
+
+      // Create main results section
+      const resultsDiv = document.createElement("div");
+      // Summary section
+      const summaryDiv = document.createElement("div");
+      summaryDiv.innerHTML = `
+        <h3 style="margin: 0 0 10px 0;">Cost Calculation Summary</h3>
+        <div style="margin-bottom: 15px;">
+          <strong>Total Payment Cycle:</strong> ${result.totalDays} days<br>
+        </div>
+      `;
+      
+      // Person costs table
+      const people = Object.keys(result.personTotals);
+      const personTable = document.createElement("table");
+      personTable.style.marginBottom = "20px";
+      
+      const personThead = document.createElement("thead");
+      personThead.innerHTML = `
+        <tr><th colspan="5">Individual Costs</th></tr>
+        <tr><th>Person</th><th>Total Paid Amount</th><th>Total Refund</th><th>Actual Spent Amount</th><th>Percentage</th></tr>
+      `;
+      personTable.appendChild(personThead);
+      
+      const personTbody = document.createElement("tbody");
+      let grandTotal = 0;
+      
+      people.forEach(person => {
+        // Calculate actual spent amount by summing all Room Occupancy Details for this person
+        let actualSpentAmount = 0;
+        result.segments.forEach(segment => {
+          if (segment.people[0] === person) {
+            actualSpentAmount += segment.dailyRate * segment.days;
+          }
+        });
+        
+        const paidAmount = result.personPaidAmounts[person] || 0; // Total paid amount
+        const refundAmount = result.personRefundAmounts[person] || 0; // Total refund received from others
+        grandTotal += actualSpentAmount;
+        const percentage = (actualSpentAmount / totalAmountEntered * 100).toFixed(1);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${person}</td>
+          <td>${currency} ${paidAmount.toFixed(2)}</td>
+          <td>${currency} ${refundAmount.toFixed(2)}</td>
+          <td>${currency} ${actualSpentAmount.toFixed(2)}</td>
+          <td>${percentage}%</td>
+        `;
+        personTbody.appendChild(row);
+      });
+      
+      // Total row
+      const totalPaidAmount = Object.values(result.personPaidAmounts || {}).reduce((sum, amount) => sum + amount, 0);
+      const totalRefundAmount = Object.values(result.personRefundAmounts || {}).reduce((sum, amount) => sum + amount, 0);
+      const totalRow = document.createElement("tr");
+      totalRow.innerHTML = `
+        <td style="font-weight: bold;">Total</td>
+        <td style="font-weight: bold;">${currency} ${totalPaidAmount.toFixed(2)}</td>
+        <td style="font-weight: bold;">${currency} ${totalRefundAmount.toFixed(2)}</td>
+        <td style="font-weight: bold;">${currency} ${grandTotal.toFixed(2)}</td>
+        <td style="font-weight: bold;">100%</td>
+      `;
+      personTbody.appendChild(totalRow);
+      personTable.appendChild(personTbody);
+      
+      // Period details table
+      const periodTable = document.createElement("table");
+      periodTable.style.marginBottom = "20px";
+      periodTable.style.width = "100%"; // Full width
+      periodTable.style.borderCollapse = "collapse";
+      periodTable.style.border = "2px solid #007acc";
+      
+      const periodThead = document.createElement("thead");
+      periodThead.innerHTML = `
+        <tr><th colspan="10">Room Occupancy Details</th></tr>
+        <tr>
+          <th>#</th>
+          <th>Room</th>
+          <th>Living By</th>
+          <th>From Date</th>
+          <th>To Date</th>
+          <th>Days</th>
+          <th>Period Type</th>
+          <th>Room Price</th>
+          <th>Daily Rate</th>
+          <th>Actual Spent Amount</th>
+        </tr>
+      `;
+      periodTable.appendChild(periodThead);
+      
+      const periodTbody = document.createElement("tbody");
+      result.segments.forEach(segment => {
+        const row = document.createElement("tr");
+        const startStr = formatDateToYYYYMMDD(segment.start);
+        const endStr = formatDateToYYYYMMDD(segment.end);
+        
+        // Color code different period types
+        let rowStyle = "";
+        let actualSpentForPeriod = segment.totalCost; // Use totalCost which now reflects correct amount
+        let displayText = "";
+        
+        if (segment.periodType === 'before') {
+          rowStyle = 'style="background-color: #fff3cd;"'; // Yellow for before
+        } else if (segment.periodType === 'after') {
+          rowStyle = 'style="background-color: #d1ecf1;"'; // Blue for after
+        }
+        
+        // Check if this person's stay is covered by another person's payment
+        if (segment.isPaidByOther) {
+          rowStyle = 'style="background-color: #d4edda; color: #155724;"'; // Green for free
+          displayText = `FREE (Paid by ${segment.paidByPerson})`;
+          actualSpentForPeriod = 0;
+        }
+        
+        row.innerHTML = `
+          <td>${segment.index}</td>
+          <td>${segment.room}</td>
+          <td>${segment.people[0]}</td>
+          <td>${startStr}</td>
+          <td>${endStr}</td>
+          <td>${segment.days}</td>
+          <td ${rowStyle}>${segment.isPaidByOther ? displayText : (segment.label || 'Within Payment Cycle')}</td>
+          <td>${currency} ${segment.originalRoomPrice.toFixed(2)}</td>
+          <td>${currency} ${segment.dailyRate.toFixed(2)}</td>
+          <td style="font-weight: bold; color: ${segment.isPaidByOther ? '#155724' : '#0066cc'};">${currency} ${actualSpentForPeriod.toFixed(2)}</td>
+        `;
+        periodTbody.appendChild(row);
+      });
+      periodTable.appendChild(periodTbody);
+      
+      // Refund details table
+      let refundTable = "";
+      if (result.refundDetails && result.refundDetails.length > 0) {
+        refundTable = `
+          <table style="margin-bottom: 20px;">
+            <thead>
+              <tr><th colspan="5">Refund/Replacement Details</th></tr>
+              <tr>
+                <th>Person</th>
+                <th>Room</th>
+                <th>Refund Amount</th>
+                <th>Reason</th>
+                <th>Refund From</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        result.refundDetails.forEach(refund => {
+          refundTable += `
+            <tr>
+              <td>${refund.person}</td>
+              <td>${refund.room}</td>
+              <td>${currency} ${refund.amount.toFixed(2)}</td>
+              <td>${refund.reason}</td>
+              <td>${refund.fromWho}</td>
+            </tr>
+          `;
+        });
+        
+        refundTable += `
+            </tbody>
+          </table>
+        `;
+      }
+      
+      // Gap periods section
+      let gapSection = "";
+      if (result.gapPeriods.length > 0) {
+        gapSection = `
+          <div style="margin-top: 20px; padding: 10px; border: 1px solid #ff9800; background-color: #fff3e0;">
+            <h4 style="margin: 0 0 10px 0; color: #e65100;">Gap Periods Identified</h4>
+        `;
+        
+        result.gapPeriods.forEach((gap, index) => {
+          const startStr = formatDateToYYYYMMDD(gap.start);
+          const endStr = formatDateToYYYYMMDD(gap.end);
+          gapSection += `
+            <div style="margin-bottom: 8px;">
+              <strong>${gap.type}:</strong> ${startStr} to ${endStr}<br>
+              <strong>Room:</strong> ${gap.room || 'Multiple'}<br>
+              <strong>Description:</strong> ${gap.description.replace(gap.cost.toFixed(2), currency + ' ' + gap.cost.toFixed(2))}<br>
+              <strong>Lost Revenue:</strong> ${currency} ${gap.cost.toFixed(2)}
+            </div>
+          `;
+        });
+        
+        gapSection += `</div>`;
+      }
+      
+      // Validation section removed
+      
+      // Company compensation section
+      let compensationSection = "";
+      // Hide company compensation box
+      /*
+      if (result.totalCompanyCompensation > 0) {
+        compensationSection = `
+          <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; background-color: #d4edda; border-radius: 5px;">
+            <h4 style="margin: 0 0 10px 0; color: #155724;">💰 Company Compensation for Unoccupied Rooms</h4>
+            <div style="color: #155724;">
+              <div style="margin-bottom: 8px;">
+                <strong>Total Compensation Amount:</strong> ${currency} ${result.totalCompanyCompensation.toFixed(2)}
+              </div>
+              <div style="margin-bottom: 8px;">
+                <strong>Active Tenants Receiving Refunds:</strong> ${result.activeTenants.join(', ')} (${result.activeTenants.length} people)
+              </div>
+              <div style="margin-bottom: 8px;">
+                <strong>Refund Amount per Tenant:</strong> ${currency} ${(result.totalCompanyCompensation / result.activeTenants.length).toFixed(2)}
+              </div>
+              <div style="font-size: 14px; margin-top: 10px;">
+                <strong>Explanation:</strong> The company covers costs for unoccupied rooms and distributes this amount equally among active tenants as a refund, reducing their net costs.
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      */
+      
+      // Monthly violations warning removed
+      
+      // Payment Cycle Obligations table (current and next)
+      let cycleObligationsTable = "";
+      const currentCycleObligations = [];
+      const nextCycleObligations = [];
+      
+      // Current payment cycle obligations
+      result.personPeriods.forEach(period => {
+        // Check if person started before or at payment cycle start - they pay full for current cycle
+        if (period.start <= result.paymentStart) {
+          currentCycleObligations.push({
+            person: period.person,
+            room: period.room,
+            startDate: period.start,
+            endDate: period.end,
+            roomPrice: period.price,
+            paysFullCycle: true,
+            obligationReason: `Started before/at payment cycle (${formatDateToYYYYMMDD(period.start)}) - pays full cycle`,
+            cycleType: 'current'
+          });
+        }
+      });
+      
+      // Next payment cycle obligations  
+      result.personPeriods.forEach(period => {
+        // Check if person's end date is after the next payment cycle start
+        if (period.end >= result.nextPaymentStart) {
+          nextCycleObligations.push({
+            person: period.person,
+            room: period.room,
+            startDate: period.start,
+            endDate: period.end,
+            roomPrice: period.price,
+            paysFullCycle: true,
+            obligationReason: `End date (${formatDateToYYYYMMDD(period.end)}) extends into next payment cycle`,
+            cycleType: 'next'
+          });
+        }
+      });
+      
+      if (currentCycleObligations.length > 0 || nextCycleObligations.length > 0) {
+        cycleObligationsTable = `
+          <div style="margin-top: 20px;">
+            <h4 style="margin: 0 0 10px 0;">📅 Payment Cycle Obligations</h4>
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">
+              People who pay full room price for payment cycles (not proportional to days).
+            </p>
+            <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <thead>
+                <tr style="background-color: #f8f9fa;">
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Payment Cycle</th>
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Person</th>
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Room</th>
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Stay Period</th>
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: right;">Full Room Price</th>
+                  <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+        
+        // Add current cycle obligations
+        currentCycleObligations.forEach(obligation => {
+          cycleObligationsTable += `
+            <tr style="background-color: #e8f5e8;">
+              <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #2e7d2e;">Current Cycle</td>
+              <td style="border: 1px solid #ccc; padding: 8px;">${obligation.person}</td>
+              <td style="border: 1px solid #ccc; padding: 8px;">${obligation.room}</td>
+              <td style="border: 1px solid #ccc; padding: 8px; font-size: 12px;">
+                ${formatDateToYYYYMMDD(obligation.startDate)} to ${formatDateToYYYYMMDD(obligation.endDate)}
+              </td>
+              <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold; color: #2e7d2e;">
+                ${currency} ${obligation.roomPrice.toFixed(2)}
+              </td>
+              <td style="border: 1px solid #ccc; padding: 8px; font-size: 12px; color: #666;">
+                ${obligation.obligationReason}
+              </td>
+            </tr>
+          `;
+        });
+        
+        // Add next cycle obligations
+        nextCycleObligations.forEach(obligation => {
+          cycleObligationsTable += `
+            <tr style="background-color: #fff3e0;">
+              <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #d32f2f;">Next Cycle</td>
+              <td style="border: 1px solid #ccc; padding: 8px;">${obligation.person}</td>
+              <td style="border: 1px solid #ccc; padding: 8px;">${obligation.room}</td>
+              <td style="border: 1px solid #ccc; padding: 8px; font-size: 12px;">
+                ${formatDateToYYYYMMDD(obligation.startDate)} to ${formatDateToYYYYMMDD(obligation.endDate)}
+              </td>
+              <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold; color: #d32f2f;">
+                ${currency} ${obligation.roomPrice.toFixed(2)}
+              </td>
+              <td style="border: 1px solid #ccc; padding: 8px; font-size: 12px; color: #666;">
+                ${obligation.obligationReason}
+              </td>
+            </tr>
+          `;
+        });
+        
+        cycleObligationsTable += `
+              </tbody>
+            </table>
+            <div style="margin-top: 10px; padding: 10px; background-color: #f0f8ff; border-left: 4px solid #007acc;">
+              <strong>Key:</strong><br>
+              <span style="color: #2e7d2e;">🟢 Current Cycle:</span> People who started before/at payment cycle start and pay full room price<br>
+              <span style="color: #d32f2f;">🔴 Next Cycle:</span> People whose stay extends into the next payment cycle and must pay full price for next cycle
+            </div>
+          </div>
+        `;
+      }
+
+      // Assemble final HTML
+      resultsDiv.innerHTML = `
+        ${compensationSection}
+        ${summaryDiv.outerHTML}
+        ${personTable.outerHTML}
+        ${periodTable.outerHTML}
+        ${cycleObligationsTable}
+        ${refundTable}
+        ${gapSection}
+        <div class="summary">
+          <div style="margin-top: 8px; font-size: 12px; color: #666;">
+            Note: Periods extending beyond the payment cycle are automatically broken down. The company compensates for unoccupied rooms and distributes refunds to active tenants. 
+            Color coding: Yellow = Before payment cycle, Blue = After payment cycle, White = Within payment cycle.
+          </div>
+        </div>
+      `;
+      
+      container.appendChild(resultsDiv);
+    }
+
+    document
+      .getElementById("calculateBtn")
+      .addEventListener("click", calculateAndRender);
+  </script>
+</body>
+</html>

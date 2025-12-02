@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apartment Living Cost Calculator - Fun with AI 🏠</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color), #059669);
+            color: white;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-color), #d97706);
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .results-container {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .results-container.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            color: var(--primary-dark);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .result-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .breakdown-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .breakdown-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .breakdown-list li:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-list .label {
+            color: var(--text-dark);
+        }
+
+        .breakdown-list .value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .ai-tip-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .ai-tip-card h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-tip-card p {
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .fun-fact-card {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .fun-fact-card h3 {
+            color: #065f46;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fun-fact-card p {
+            color: #047857;
+            line-height: 1.6;
+        }
+
+        .emoji-animation {
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .pie-chart:hover {
+            transform: scale(1.05);
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .savings-goal {
+            background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid #ec4899;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .main-card {
+                padding: 20px;
+            }
+
+            .result-amount {
+                font-size: 2rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 Apartment Living Cost Calculator</h1>
+            <p>Fun with AI - Smart budgeting made enjoyable! ✨</p>
+        </header>
+
+        <div class="main-card">
+            <h2 class="section-title">
+                <span class="emoji-animation">💰</span>
+                Enter Your Monthly Expenses
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="rent">🏠 Monthly Rent ($)</label>
+                    <input type="number" id="rent" placeholder="e.g., 1500" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="utilities">💡 Utilities ($)</label>
+                    <input type="number" id="utilities" placeholder="e.g., 150" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="internet">📶 Internet ($)</label>
+                    <input type="number" id="internet" placeholder="e.g., 60" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="groceries">🛒 Groceries ($)</label>
+                    <input type="number" id="groceries" placeholder="e.g., 400" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="transportation">🚗 Transportation ($)</label>
+                    <input type="number" id="transportation" placeholder="e.g., 200" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="entertainment">🎮 Entertainment ($)</label>
+                    <input type="number" id="entertainment" placeholder="e.g., 100" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="insurance">🛡️ Insurance ($)</label>
+                    <input type="number" id="insurance" placeholder="e.g., 200" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="other">📦 Other Expenses ($)</label>
+                    <input type="number" id="other" placeholder="e.g., 100" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="income">💵 Monthly Income ($)</label>
+                    <input type="number" id="income" placeholder="e.g., 4000" min="0">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="calculateCosts()">
+                    🧮 Calculate Total
+                </button>
+                <button class="btn btn-secondary" onclick="getAITip()">
+                    🤖 Get AI Tip
+                </button>
+                <button class="btn btn-accent" onclick="getFunFact()">
+                    🎲 Fun Fact
+                </button>
+            </div>
+
+            <div id="results" class="results-container">
+                <div class="result-card">
+                    <h3 class="result-title">📊 Your Monthly Summary</h3>
+                    <p>Total Living Cost:</p>
+                    <p class="result-amount" id="totalCost">$0</p>
+
+                    <ul class="breakdown-list" id="breakdown">
+                        <!-- Dynamically populated -->
+                    </ul>
+                </div>
+
+                <div class="chart-container">
+                    <div class="pie-chart" id="pieChart"></div>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
+
+                <div class="savings-goal" id="savingsSection" style="display: none;">
+                    <h3 style="color: #9d174d; margin-bottom: 10px;">
+                        💎 Savings Potential
+                    </h3>
+                    <p id="savingsText" style="color: #831843;"></p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="savingsProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="aiTipSection" class="ai-tip-card" style="display: none;">
+                    <h3>🤖 AI Money-Saving Tip</h3>
+                    <p id="aiTipText"></p>
+                </div>
+
+                <div id="funFactSection" class="fun-fact-card" style="display: none;">
+                    <h3>🎯 Fun Housing Fact</h3>
+                    <p id="funFactText"></p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ and AI | Apartment Living Cost Calculator</p>
+            <p style="margin-top: 5px; font-size: 0.9rem;">
+                <a href="https://github.com/nghiacr002/apartment-living-cost" target="_blank">
+                    ⭐ Star on GitHub
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // AI-generated money-saving tips
+        const aiTips = [
+            "🌟 Consider meal prepping on Sundays! Studies show it can reduce your grocery spending by up to 25%.",
+            "💡 Switching to LED bulbs throughout your apartment can cut your electricity bill by up to 75% for lighting!",
+            "🚿 A low-flow showerhead can save up to 2,700 gallons of water per year - that's money back in your pocket!",
+            "📱 Bundle your internet and streaming services - you could save $20-50 monthly by negotiating!",
+            "🌡️ Adjusting your thermostat by just 2 degrees can save up to 10% on heating and cooling costs!",
+            "🛒 Shopping at local farmers' markets near closing time often means 50% off fresh produce!",
+            "🚌 Public transit passes often offer unlimited monthly rides cheaper than 20 individual trips!",
+            "🔌 Unplugging devices when not in use can save up to $100 per year in 'vampire' energy costs!",
+            "☕ Making coffee at home instead of buying it daily can save you over $1,000 per year!",
+            "📚 Your local library offers free streaming services, saving you money on entertainment subscriptions!",
+            "🏋️ Many apartments include gym access - skip the expensive gym membership and use building amenities!",
+            "🌱 Growing herbs on your windowsill can save $50+ monthly and add fresh flavors to your meals!",
+            "💳 Set up automatic payments to avoid late fees - the average American pays $150 in late fees yearly!",
+            "🎮 Game subscription services often cost less than buying two new games per year!",
+            "🧊 Running your dishwasher only when full saves both water and energy - up to $40 annually!"
+        ];
+
+        // Fun housing and apartment facts
+        const funFacts = [
+            "🏢 The world's most expensive apartment sold for $238 million in Monaco in 2010!",
+            "🗽 The average rent in Manhattan is over $5,000/month - your rent might not seem so bad now!",
+            "🇯🇵 In Japan, some apartments come with 'capsule' beds that fold into the wall to save space!",
+            "🌍 The concept of apartments dates back to ancient Rome, where they were called 'insulae'!",
+            "🐕 Over 72% of renters in the US have at least one pet - you're not alone in loving your furry friend!",
+            "🏠 The tiny house movement has seen homes as small as 100 sq ft become popular residences!",
+            "🌆 In Hong Kong, some people live in 'coffin homes' that are only 15 square feet!",
+            "📦 The average American moves 11.7 times in their lifetime - that's a lot of packing!",
+            "🎨 The color of your walls can affect your mood - blue promotes calm, yellow promotes creativity!",
+            "🌿 Studies show that having plants in your apartment can increase productivity by 15%!",
+            "🏗️ The Empire State Building has 2,768,591 square feet of rentable space!",
+            "💡 Thomas Edison had an apartment in his laboratory where he would often sleep!",
+            "🎭 The 'Friends' apartment in NYC would cost about $4,500/month in today's market!",
+            "🌙 Night owls tend to prefer apartments on higher floors, while early birds prefer ground floors!",
+            "🚪 The average apartment door is opened and closed about 10 times per day!"
+        ];
+
+        const categoryColors = {
+            rent: '#6366f1',
+            utilities: '#f59e0b',
+            internet: '#10b981',
+            groceries: '#ec4899',
+            transportation: '#8b5cf6',
+            entertainment: '#f97316',
+            insurance: '#06b6d4',
+            other: '#64748b'
+        };
+
+        function getInputValue(id) {
+            const value = parseFloat(document.getElementById(id).value) || 0;
+            return Math.max(0, value);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function calculateCosts() {
+            const expenses = {
+                rent: getInputValue('rent'),
+                utilities: getInputValue('utilities'),
+                internet: getInputValue('internet'),
+                groceries: getInputValue('groceries'),
+                transportation: getInputValue('transportation'),
+                entertainment: getInputValue('entertainment'),
+                insurance: getInputValue('insurance'),
+                other: getInputValue('other')
+            };
+
+            const income = getInputValue('income');
+            const total = Object.values(expenses).reduce((sum, val) => sum + val, 0);
+
+            // Show results
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.classList.add('visible');
+
+            // Update total
+            document.getElementById('totalCost').textContent = formatCurrency(total);
+
+            // Update breakdown
+            const breakdown = document.getElementById('breakdown');
+            breakdown.innerHTML = '';
+
+            const labels = {
+                rent: '🏠 Rent',
+                utilities: '💡 Utilities',
+                internet: '📶 Internet',
+                groceries: '🛒 Groceries',
+                transportation: '🚗 Transportation',
+                entertainment: '🎮 Entertainment',
+                insurance: '🛡️ Insurance',
+                other: '📦 Other'
+            };
+
+            for (const [key, value] of Object.entries(expenses)) {
+                if (value > 0) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span class="label">${labels[key]}</span>
+                        <span class="value">${formatCurrency(value)}</span>
+                    `;
+                    breakdown.appendChild(li);
+                }
+            }
+
+            // Create pie chart
+            createPieChart(expenses, total);
+
+            // Calculate savings
+            if (income > 0) {
+                const savingsSection = document.getElementById('savingsSection');
+                const savingsText = document.getElementById('savingsText');
+                const savingsProgress = document.getElementById('savingsProgress');
+
+                const savings = income - total;
+                const savingsPercent = (savings / income) * 100;
+
+                savingsSection.style.display = 'block';
+
+                if (savings > 0) {
+                    savingsText.textContent = `You could save ${formatCurrency(savings)} per month (${savingsPercent.toFixed(1)}% of income)! That's ${formatCurrency(savings * 12)} per year! 🎉`;
+                } else {
+                    savingsText.textContent = `⚠️ Your expenses exceed your income by ${formatCurrency(Math.abs(savings))}. Consider reviewing your budget.`;
+                }
+
+                savingsProgress.style.width = `${Math.max(0, Math.min(100, savingsPercent))}%`;
+            }
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function createPieChart(expenses, total) {
+            const pieChart = document.getElementById('pieChart');
+            const chartLegend = document.getElementById('chartLegend');
+
+            if (total === 0) {
+                pieChart.style.background = '#e5e7eb';
+                chartLegend.innerHTML = '<p>Enter expenses to see the breakdown</p>';
+                return;
+            }
+
+            // Create conic gradient for pie chart
+            let gradientParts = [];
+            let currentAngle = 0;
+
+            const labels = {
+                rent: 'Rent',
+                utilities: 'Utilities',
+                internet: 'Internet',
+                groceries: 'Groceries',
+                transportation: 'Transportation',
+                entertainment: 'Entertainment',
+                insurance: 'Insurance',
+                other: 'Other'
+            };
+
+            chartLegend.innerHTML = '';
+
+            for (const [key, value] of Object.entries(expenses)) {
+                if (value > 0) {
+                    const percentage = (value / total) * 100;
+                    const endAngle = currentAngle + (percentage * 3.6);
+
+                    gradientParts.push(`${categoryColors[key]} ${currentAngle}deg ${endAngle}deg`);
+
+                    // Add legend item
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'legend-item';
+                    legendItem.innerHTML = `
+                        <span class="legend-color" style="background: ${categoryColors[key]}"></span>
+                        <span>${labels[key]} (${percentage.toFixed(1)}%)</span>
+                    `;
+                    chartLegend.appendChild(legendItem);
+
+                    currentAngle = endAngle;
+                }
+            }
+
+            pieChart.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+        }
+
+        function getAITip() {
+            const aiTipSection = document.getElementById('aiTipSection');
+            const aiTipText = document.getElementById('aiTipText');
+
+            // Show with animation
+            aiTipSection.style.display = 'block';
+            aiTipSection.style.animation = 'none';
+            aiTipSection.offsetHeight; // Trigger reflow
+            aiTipSection.style.animation = 'fadeIn 0.5s ease';
+
+            // Random tip with "AI thinking" effect
+            aiTipText.textContent = '🤔 AI is analyzing your budget...';
+
+            setTimeout(() => {
+                const randomTip = aiTips[Math.floor(Math.random() * aiTips.length)];
+                aiTipText.textContent = randomTip;
+            }, 800);
+
+            // Make sure results are visible
+            document.getElementById('results').classList.add('visible');
+            aiTipSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function getFunFact() {
+            const funFactSection = document.getElementById('funFactSection');
+            const funFactText = document.getElementById('funFactText');
+
+            // Show with animation
+            funFactSection.style.display = 'block';
+            funFactSection.style.animation = 'none';
+            funFactSection.offsetHeight; // Trigger reflow
+            funFactSection.style.animation = 'fadeIn 0.5s ease';
+
+            // Random fact with loading effect
+            funFactText.textContent = '🎲 Rolling the dice...';
+
+            setTimeout(() => {
+                const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+                funFactText.textContent = randomFact;
+            }, 500);
+
+            // Make sure results are visible
+            document.getElementById('results').classList.add('visible');
+            funFactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Add keyboard support for better UX
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                calculateCosts();
+            }
+        });
+
+        // Add some fun console messages
+        console.log('%c🏠 Welcome to Apartment Living Cost Calculator!', 'font-size: 20px; color: #6366f1;');
+        console.log('%c✨ Made with love and AI assistance!', 'font-size: 14px; color: #10b981;');
+        console.log('%c💡 Tip: Press Enter to quickly calculate your costs!', 'font-size: 12px; color: #f59e0b;');
+    </script>
+</body>
+</html>

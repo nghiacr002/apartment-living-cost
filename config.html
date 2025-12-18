@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Converter - JSON/INI/ENV to DevOps Format</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .conversion-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #007acc;
+        }
+        
+        .format-selector {
+            margin-bottom: 20px;
+        }
+        
+        .format-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .format-selector select {
+            width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+            color: #333;
+        }
+        
+        .input-output-container {
+            display: flex;
+            gap: 20px;
+           
+        }
+        #configInput, #configOutput{
+             min-height: 500px;
+        }
+        .input-section, .output-section {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        .input-section textarea {
+            background-color: #fafafa;
+        }
+        
+        .output-section textarea {
+            background-color: #f0f8ff;
+        }
+        
+        .button-container {
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #005a9e;
+        }
+        
+        .clear-btn {
+            background-color: #dc3545;
+        }
+        
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .copy-btn {
+            background-color: #28a745;
+        }
+        
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .input-output-container {
+                flex-direction: column;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Config Converter to DevOps Format</h1>
+        
+        <!-- Unified Conversion Section -->
+        <div class="conversion-section">
+            <div class="section-title">Config to DevOps Variables Converter</div>
+            
+            <div class="format-selector">
+                <label for="formatSelect">Select Input Format:</label>
+                <select id="formatSelect" onchange="updateFormatSelection()">
+                    <option value="json">appsettings.json</option>
+                    <option value="ini">.ini</option>
+                    <option value="env">.env</option>
+                </select>
+            </div>
+            
+            <div class="input-output-container">
+                <div class="input-section">
+                    <label for="configInput" id="inputLabel">JSON Input (appsettings.json):</label>
+                    <textarea id="configInput" placeholder='Paste your JSON here, e.g.:
+{
+  "PubSub": {
+    "TopicPrefix": "xxx",
+    "ProjectId": "xxxx"
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug"
+    }
+  }
+}'></textarea>
+                </div>
+                <div class="output-section">
+                    <label for="configOutput">DevOps Variables Output:</label>
+                    <textarea id="configOutput" readonly placeholder="Converted DevOps variables will appear here..."></textarea>
+                </div>
+            </div>
+            <div class="button-container">
+                <button onclick="convertToDevOps()" id="convertBtn">Convert JSON</button>
+                <button class="clear-btn" onclick="clearAll()">Clear</button>
+                <button class="copy-btn" onclick="copyToClipboard('configOutput')">Copy Output</button>
+            </div>
+            <div id="configError" class="error"></div>
+            <div id="configSuccess" class="success"></div>
+        </div>
+    </div>
+
+    <script>
+        // Function to flatten nested objects into dot notation with __ separators
+        function flattenObject(obj, prefix = '') {
+            const result = {};
+            
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    const newKey = prefix ? `${prefix}__${key}` : key;
+                    const value = obj[key];
+                    
+                    if (value === null || value === undefined) {
+                        result[newKey] = '';
+                    } else if (Array.isArray(value)) {
+                        // Handle arrays with indexed notation
+                        for (let i = 0; i < value.length; i++) {
+                            const arrayKey = `${newKey}__${i}`;
+                            if (typeof value[i] === 'object' && value[i] !== null) {
+                                Object.assign(result, flattenObject(value[i], arrayKey));
+                            } else {
+                                result[arrayKey] = value[i];
+                            }
+                        }
+                    } else if (typeof value === 'object' && value !== null) {
+                        // Recursively flatten nested objects
+                        Object.assign(result, flattenObject(value, newKey));
+                    } else {
+                        result[newKey] = value;
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        // Function to convert flattened object to DevOps YAML format
+        function convertToDevOpsFormat(flatObject) {
+            let output = 'vars:\n';
+            
+            for (const [key, value] of Object.entries(flatObject)) {
+                // Escape quotes in values
+                let formattedValue = value;
+                if (typeof value === 'string') {
+                    formattedValue = `"${value.replace(/"/g, '\\"')}"`;
+                } else if (typeof value === 'number' || typeof value === 'boolean') {
+                    formattedValue = `"${value}"`;
+                } else {
+                    formattedValue = `"${value}"`;
+                }
+                
+                output += `  ${key}: ${formattedValue}\n`;
+            }
+            
+            return output;
+        }
+        
+        // Unified conversion function
+        function convertToDevOps() {
+            const format = document.getElementById('formatSelect').value;
+            const input = document.getElementById('configInput').value.trim();
+            const output = document.getElementById('configOutput');
+            const errorDiv = document.getElementById('configError');
+            const successDiv = document.getElementById('configSuccess');
+            
+            // Clear previous messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (!input) {
+                showError('configError', `Please enter ${format.toUpperCase()} content to convert.`);
+                return;
+            }
+            
+            try {
+                let configObj;
+                
+                switch(format) {
+                    case 'json':
+                        configObj = JSON.parse(input);
+                        break;
+                    case 'ini':
+                        configObj = parseIni(input);
+                        break;
+                    case 'env':
+                        configObj = parseEnv(input);
+                        break;
+                    default:
+                        throw new Error('Unsupported format');
+                }
+                
+                const flattened = format === 'env' ? configObj : flattenObject(configObj);
+                const devOpsFormat = convertToDevOpsFormat(flattened);
+                
+                output.value = devOpsFormat;
+                showSuccess('configSuccess', `${format.toUpperCase()} successfully converted to DevOps format!`);
+            } catch (error) {
+                showError('configError', `Error parsing ${format.toUpperCase()}: ` + error.message);
+                output.value = '';
+            }
+        }
+        
+        // Function to update format selection
+        function updateFormatSelection() {
+            const format = document.getElementById('formatSelect').value;
+            const inputLabel = document.getElementById('inputLabel');
+            const convertBtn = document.getElementById('convertBtn');
+            const configInput = document.getElementById('configInput');
+            
+            let placeholder = '';
+            let label = '';
+            let buttonText = '';
+            
+            switch(format) {
+                case 'json':
+                    label = 'JSON Input (appsettings.json):';
+                    buttonText = 'Convert JSON';
+                    placeholder = `Paste your JSON here, e.g.:
+{
+  "PubSub": {
+    "TopicPrefix": "na-hub-non-prd-pubsub",
+    "ProjectId": "pro-na-hub"
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug"
+    }
+  }
+}`;
+                    break;
+                case 'ini':
+                    label = 'INI Input:';
+                    buttonText = 'Convert INI';
+                    placeholder = `Paste your INI content here, e.g.:
+[PubSub]
+TopicPrefix=na-hub-non-prd-pubsub
+ProjectId=pro-na-hub
+
+[Serilog.MinimumLevel]
+Default=Debug
+Microsoft.AspNetCore=Warning`;
+                    break;
+                case 'env':
+                    label = '.env Input:';
+                    buttonText = 'Convert .env';
+                    placeholder = `Paste your .env content here, e.g.:
+DB_HOST=x.x.x.x
+DB_NAME=xxxxxxxx
+DB_USER=xxxxxxxx
+DB_PASSWORD=xxxxxxxx
+DB_PORT=1433
+
+BATCH_SIZE=1000
+BILLING_SERVICE_URL=https://xxxxx.xx.xx.xx`;
+                    break;
+            }
+            
+            inputLabel.textContent = label;
+            convertBtn.textContent = buttonText;
+            configInput.placeholder = placeholder;
+            
+            // Clear inputs when format changes
+            clearAll();
+        }
+        
+        // Simple .env parser
+        function parseEnv(envString) {
+            const result = {};
+            const lines = envString.split('\n');
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Skip empty lines and comments
+                if (!line || line.startsWith('#')) {
+                    continue;
+                }
+                
+                // Key-value pairs
+                const equalIndex = line.indexOf('=');
+                if (equalIndex > 0) {
+                    const key = line.substring(0, equalIndex).trim();
+                    let value = line.substring(equalIndex + 1).trim();
+                    
+                    // Remove quotes if present
+                    value = value.replace(/^["']|["']$/g, '');
+                    
+                    result[key] = value;
+                }
+            }
+            
+            return result;
+        }
+        
+        // Simple INI parser
+        function parseIni(iniString) {
+            const result = {};
+            const lines = iniString.split('\n');
+            let currentSection = '';
+            let rootObject = result;
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Skip empty lines and comments
+                if (!line || line.startsWith(';') || line.startsWith('#')) {
+                    continue;
+                }
+                
+                // Section headers
+                if (line.startsWith('[') && line.endsWith(']')) {
+                    currentSection = line.slice(1, -1);
+                    
+                    // Handle nested sections (dots in section names)
+                    const sectionParts = currentSection.split('.');
+                    rootObject = result;
+                    
+                    for (const part of sectionParts) {
+                        if (!rootObject[part]) {
+                            rootObject[part] = {};
+                        }
+                        rootObject = rootObject[part];
+                    }
+                    continue;
+                }
+                
+                // Key-value pairs
+                const equalIndex = line.indexOf('=');
+                if (equalIndex > 0) {
+                    const key = line.substring(0, equalIndex).trim();
+                    const value = line.substring(equalIndex + 1).trim();
+                    
+                    // Remove quotes if present
+                    const cleanValue = value.replace(/^["']|["']$/g, '');
+                    
+                    if (currentSection) {
+                        rootObject[key] = cleanValue;
+                    } else {
+                        result[key] = cleanValue;
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        // Utility functions
+        function clearAll() {
+            document.getElementById('configInput').value = '';
+            document.getElementById('configOutput').value = '';
+            document.getElementById('configError').style.display = 'none';
+            document.getElementById('configSuccess').style.display = 'none';
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            if (element.value) {
+                element.select();
+                document.execCommand('copy');
+                
+                // Show temporary success message
+                showSuccess('configSuccess', 'Copied to clipboard!');
+                setTimeout(() => {
+                    document.getElementById('configSuccess').style.display = 'none';
+                }, 2000);
+            }
+        }
+        
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        // Add sample data button functionality
+        function loadJsonSample() {
+            const sampleJson = {
+                "PubSub": {
+                    "TopicPrefix": "na-hub-non-prd-pubsub",
+                    "ProjectId": "pro-na-hub",
+                    "VersionId": "1",
+                    "SecretId": "",
+                    "Topics": [
+                        {
+                            "TopicId": "na-hub-non-prd-pubsub-reg-crm-topic",
+                            "SubscriptionId": "na-hub-non-prd-pubsub-reg-crm-topic-sub"
+                        }
+                    ]
+                },
+                "CrmApiEndpoint": {
+                    "BaseUrl": "https://non-prd-crm-integration-api.address.gov.sa",
+                    "CreateSubscription": "/api/v1/commercial-subscriptions",
+                    "Channel": 3,
+                    "TimeOut": 30
+                },
+                "Serilog": {
+                    "MinimumLevel": {
+                        "Default": "Debug",
+                        "Override": {
+                            "Microsoft.AspNetCore": "Warning",
+                            "Microsoft.EntityFrameworkCore": "Information"
+                        }
+                    },
+                    "Enrich": [
+                        "FromLogContext",
+                        "WithOpenTelemetryTraceId",
+                        "WithOpenTelemetrySpanId"
+                    ]
+                }
+            };
+            
+            document.getElementById('configInput').value = JSON.stringify(sampleJson, null, 2);
+        }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'Enter':
+                        event.preventDefault();
+                        convertToDevOps();
+                        break;
+                }
+            }
+        });
+        
+        // Add sample data on page load
+        window.onload = function() {
+            loadJsonSample();
+        };
+    </script>
+</body>
+</html>

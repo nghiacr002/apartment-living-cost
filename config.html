@@ -189,8 +189,8 @@
             
             <div class="input-output-container">
                 <div class="input-section">
-                    <label for="configInput" id="inputLabel">JSON Input (appsettings.json):</label>
-                    <textarea id="configInput" placeholder='Paste your JSON here, e.g.:
+                    <label for="configInput" id="inputLabel">Input (appsettings.json):</label>
+                    <textarea id="configInput" placeholder='Paste here, e.g.:
 {
   "PubSub": {
     "TopicPrefix": "xxx",
@@ -209,7 +209,7 @@
                 </div>
             </div>
             <div class="button-container">
-                <button onclick="convertToDevOps()" id="convertBtn">Convert JSON</button>
+                <button onclick="convertToDevOps()" id="convertBtn">Convert</button>
                 <button class="clear-btn" onclick="clearAll()">Clear</button>
                 <button class="copy-btn" onclick="copyToClipboard('configOutput')">Copy Output</button>
             </div>
@@ -500,19 +500,19 @@ BILLING_SERVICE_URL=https://xxxxx.xx.xx.xx`;
         function loadJsonSample() {
             const sampleJson = {
                 "PubSub": {
-                    "TopicPrefix": "na-hub-non-prd-pubsub",
-                    "ProjectId": "pro-na-hub",
+                    "TopicPrefix": "xxxxx",
+                    "ProjectId": "xxxxx",
                     "VersionId": "1",
                     "SecretId": "",
                     "Topics": [
                         {
-                            "TopicId": "na-hub-non-prd-pubsub-reg-crm-topic",
-                            "SubscriptionId": "na-hub-non-prd-pubsub-reg-crm-topic-sub"
+                            "TopicId": "xxxxx",
+                            "SubscriptionId": "xxxxx"
                         }
                     ]
                 },
                 "CrmApiEndpoint": {
-                    "BaseUrl": "https://non-prd-crm-integration-api.address.gov.sa",
+                    "BaseUrl": "https://xxxxxx.xx.xx",
                     "CreateSubscription": "/api/v1/commercial-subscriptions",
                     "Channel": 3,
                     "TimeOut": 30
